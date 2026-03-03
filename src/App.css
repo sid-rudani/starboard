@@ -62,6 +62,15 @@ body {
   text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
+.App-tagline {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.5px;
+  font-style: italic;
+}
+
 .list-container {
   flex: 1;
   overflow-y: auto;

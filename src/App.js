@@ -183,6 +183,7 @@ function App() {
       </div>
       <header className="App-header">
         <h1>Starboard</h1>
+        <p className="App-tagline">With Love ~ sid</p>
       </header>
 
       <div className="list-container">
