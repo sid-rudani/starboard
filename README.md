@@ -1,3 +1,50 @@
+# STARBOARD
+
+This project displays a list of tiles with upvotes and persists data to Supabase.
+
+## Supabase Setup
+1. Create a table named `items` with columns:
+   - `id` (bigint or serial primary key)
+   - `text` (text)
+   - `votes` (integer, default 0)
+2. Obtain your **Supabase URL** and **anon/public API key** from your Supabase project.
+3. Create a `.env` file in the project root with:
+
+   ```dotenv
+   REACT_APP_SUPABASE_URL=https://xyzcompany.supabase.co
+   REACT_APP_SUPABASE_KEY=your-public-anon-key
+   ```
+
+   or, when the app runs with no credentials it will display a small form at the top of the list where you can paste the URL and key; the values are saved to `localStorage` so they persist across reloads.
+
+4. Restart the development server (`npm start`) after adding the environment variables (or simply fill in the form).
+
+Once configured the app will automatically fetch and update the list.
+
+
+A simple React app that displays a list of items with upvote buttons.
+The UI uses a dark theme with orange highlights and the data persists
+using Supabase. You can configure your Supabase credentials via
+environment variables (see below).
+
+## Supabase Setup
+
+1. Create a new project at https://supabase.com and add a table named `items` with columns:
+   - `id` (bigint, primary key, auto increment)
+   - `text` (text)
+   - `votes` (integer, default 0)
+2. Obtain your project URL and anon/public key.
+3. In the project root create a `.env` file containing:
+
+   ```env
+   REACT_APP_SUPABASE_URL=your-project-url
+   REACT_APP_SUPABASE_KEY=your-anon-key
+   ```
+
+4. Restart the development server to pick up the variables.
+
+The app will automatically load, add, and upvote items through Supabase.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
