@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Inputbar from './components/inputbar';
 import Tile from './components/tile';
 import { supabase, supabaseUrl, supabaseKey, supabaseConfigured } from './supabaseClient';
+import { findBadWord } from './badWords';
 import './App.css';
+
 
 function App() {
   const [items, setItems] = useState([]);
@@ -18,6 +20,15 @@ function App() {
     }
     return token;
   });
+
+  // Profanity tracking
+  const MAX_ATTEMPTS = 3;
+  const [profanityAttempts, setProfanityAttempts] = useState(
+    () => parseInt(localStorage.getItem('profanity_attempts') || '0', 10)
+  );
+  const [banned, setBanned] = useState(
+    () => localStorage.getItem('profanity_banned') === 'true'
+  );
 
   // Track which items this user has already upvoted
   const [votedItems, setVotedItems] = useState(() => {
@@ -54,9 +65,7 @@ function App() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'items' },
         ({ new: newItem }) => {
-          setItems(prev =>
-            [newItem, ...prev].sort((a, b) => b.votes - a.votes)
-          );
+          setItems(prev => [newItem, ...prev].sort((a, b) => b.votes - a.votes));
         }
       )
       .on(
@@ -85,18 +94,32 @@ function App() {
   }, []);
 
   const addItem = async text => {
+    if (banned) return;
+
+    const badWord = findBadWord(text);
+    if (badWord) {
+      const newAttempts = profanityAttempts + 1;
+      setProfanityAttempts(newAttempts);
+      localStorage.setItem('profanity_attempts', newAttempts);
+
+      if (newAttempts >= MAX_ATTEMPTS) {
+        localStorage.setItem('profanity_banned', 'true');
+        setBanned(true);
+        setError('🚫 You have been banned from posting due to repeated use of inappropriate language.');
+      } else {
+        setError(`⚠️ Inappropriate language detected. ${MAX_ATTEMPTS - newAttempts} warning(s) remaining before ban.`);
+      }
+      return;
+    }
+
     try {
       setError(null);
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from('items')
-        .insert([{ text, votes: 0, creator_token: clientToken }])
-        .select()
-        .single();
+        .insert([{ text, votes: 0, creator_token: clientToken }]);
       if (insertError) {
         console.error('Error adding item', insertError);
         setError(`Failed to add item: ${insertError.message}`);
-      } else if (data) {
-        setItems(prev => [data, ...prev]);
       }
     } catch (err) {
       console.error('Unexpected error adding item', err);
@@ -204,7 +227,7 @@ function App() {
       </div>
 
       <div className="input-wrapper">
-        <Inputbar onSubmit={addItem} />
+        <Inputbar onSubmit={addItem} disabled={banned} />
       </div>
     </div>
   );
