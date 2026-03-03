@@ -47,14 +47,34 @@ function App() {
     }
     fetchItems();
 
-    // subscribe to real-time updates (Supabase v2 syntax)
+    // Surgical real-time updates per event type
     const channel = supabase
       .channel('items_changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'items' },
-        () => {
-          fetchItems();
+        { event: 'INSERT', schema: 'public', table: 'items' },
+        ({ new: newItem }) => {
+          setItems(prev =>
+            [newItem, ...prev].sort((a, b) => b.votes - a.votes)
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'items' },
+        ({ new: updatedItem }) => {
+          setItems(prev =>
+            prev
+              .map(item => (item.id === updatedItem.id ? updatedItem : item))
+              .sort((a, b) => b.votes - a.votes)
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'items' },
+        ({ old: deletedItem }) => {
+          setItems(prev => prev.filter(item => item.id !== deletedItem.id));
         }
       )
       .subscribe();

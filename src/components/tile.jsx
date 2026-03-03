@@ -10,8 +10,7 @@ export default function Tile({ item, onUpvote, onDelete, clientToken, hasVoted }
         <button
           className={`tile-upvote${hasVoted ? ' tile-upvote--voted' : ''}`}
           onClick={onUpvote}
-          disabled={hasVoted}
-          title={hasVoted ? 'Already voted' : 'Upvote'}
+          title={hasVoted ? 'Click to remove vote' : 'Upvote'}
         >
           <span className="vote-arrow">▲</span> {item.votes}
         </button>
