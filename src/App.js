@@ -100,20 +100,25 @@ function App() {
   };
 
   const upvote = async id => {
-    if (votedItems.has(id)) return; // already voted
     const item = items.find(i => i.id === id);
     if (!item) return;
+    const alreadyVoted = votedItems.has(id);
+    const newVoteCount = (item.votes || 0) + (alreadyVoted ? -1 : 1);
     const { data, error } = await supabase
       .from('items')
-      .update({ votes: (item.votes || 0) + 1 })
+      .update({ votes: newVoteCount })
       .eq('id', id)
       .select()
       .single();
     if (error) {
       console.error('Error upvoting', error);
     } else {
-      // Record this vote in state and localStorage
-      const newVoted = new Set(votedItems).add(id);
+      const newVoted = new Set(votedItems);
+      if (alreadyVoted) {
+        newVoted.delete(id);
+      } else {
+        newVoted.add(id);
+      }
       setVotedItems(newVoted);
       localStorage.setItem('voted_items', JSON.stringify([...newVoted]));
       setItems(prev =>
